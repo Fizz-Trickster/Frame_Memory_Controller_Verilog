@@ -13,13 +13,13 @@ parameter     ADDR_WIDTH = $clog2(ADDR_DEPTH)   )(
 
 logic [DATA_WIDTH-1:0] MEM [0:ADDR_DEPTH];
 
-// SRAM WRITE 
+// FRAME MEMORY WRITE 
 always_ff @(posedge CLK) begin
   if(!CSN & !WEN)
     MEM[ADDR] <= DIN;
 end
 
-// SRAM READ
+// FRAME MEMORY READ
 always_ff @(posedge CLK) begin
   if(!CSN & WEN)
     DOUT <= #1 MEM[ADDR] ;
