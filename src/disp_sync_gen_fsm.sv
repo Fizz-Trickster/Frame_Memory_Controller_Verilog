@@ -50,6 +50,8 @@ localparam H_TOTAL = HPULSE + HBP + HRES + HFP;
 //========================================== 
 Vstate_t            cur_Vstate, nxt_Vstate;
 Hstate_t            cur_Hstate, nxt_Hstate;
+Vstate_t  [ 2:0]    cur_Vstate_d;
+Hstate_t  [ 2:0]    cur_Hstate_d;
 
 logic     [11:0]    clkCnt;
 logic     [11:0]    hsyncCnt;
@@ -257,21 +259,26 @@ assign t_de     = (cur_Hstate == S_HACTIVE) && (cur_Vstate  == S_VACTIVE  );
 
 always @(posedge i_clk, negedge rst_n) begin
   if(~rst_n) begin 
-    hsync_d <= 'd0;
-    de_d    <= 'd0;
-    vsync_d <= 'd0;
+    hsync_d       <= 'd0;
+    de_d          <= 'd0;
+    vsync_d       <= 'd0;
+    cur_Vstate_d  <= 'd0;
+    cur_Hstate_d  <= 'd0;
   end else begin
-    hsync_d <= {hsync_d[0], t_hsync };
-    de_d    <= {de_d[0]   , t_de    };
-    vsync_d <= t_vsync;
+    hsync_d       <= {hsync_d[0], t_hsync };
+    de_d          <= {de_d[0]   , t_de    };
+    vsync_d       <= t_vsync;
+    cur_Vstate_d  <= {cur_Vstate_d[1:0], cur_Vstate};
+    cur_Hstate_d  <= {cur_Hstate_d[1:0], cur_Hstate};
   end
 end
+
 
 assign o_vsync  = vsync_d   ;
 assign o_hsync  = hsync_d[1];
 assign o_de     = de_d[1]   ;
 
-assign o_Vstate = cur_Vstate;
-assign o_Hstate = cur_Hstate;
+assign o_Vstate = cur_Vstate_d[0];
+assign o_Hstate = cur_Hstate_d[1];
 
 endmodule
