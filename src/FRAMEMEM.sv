@@ -14,13 +14,13 @@ parameter     FILE_PATH  = "24bpp-320x240.ppm"    )(
 
 logic [DATA_WIDTH-1:0] MEM [0:ADDR_DEPTH];
 
-// FRAME MEMORY WRITE 
+// SRAM WRITE 
 always_ff @(posedge CLK) begin
   if(!CSN & !WEN)
     MEM[ADDR] <= DIN;
 end
 
-// FRAME MEMORY READ
+// SRAM READ
 always_ff @(posedge CLK) begin
   if(!CSN & WEN)
     DOUT <= #1 MEM[ADDR] ;
