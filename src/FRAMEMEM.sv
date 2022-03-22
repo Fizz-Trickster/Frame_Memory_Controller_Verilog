@@ -1,7 +1,8 @@
 module FRAMEMEM                                   #(
 parameter     DATA_WIDTH = 96,
 parameter     ADDR_DEPTH = 512*512/4,
-parameter     ADDR_WIDTH = $clog2(ADDR_DEPTH)   )(  
+parameter     ADDR_WIDTH = $clog2(ADDR_DEPTH),
+parameter     FILE_PATH  = "24bpp-320x240.ppm"    )(  
 
   input   logic                   CLK   ,
   input   logic                   CSN   ,
@@ -45,7 +46,7 @@ begin
   int     PPMHEADER_VRES;
   int     PPMHEADER_MAXVALUE;
 
-  fp = $fopen("24bpp-320x240.ppm", "r");
+  fp = $fopen(FILE_PATH, "r");
   
   $fscanf(fp, "%s\n",    PPMHEADER_IDENTIFIER);
   $fscanf(fp, "%d %d\n", PPMHEADER_HRES, PPMHEADER_VRES);
