@@ -6,7 +6,8 @@ module TB_FRAME_MEMORY_CONTROL;
 
 parameter   HRES        = 320;
 parameter   VRES        = 240;
-parameter   DATA_WIDTH  = 96;
+parameter   DATA_WIDTH  = 24;
+parameter   MEM_WIDTH   = DATA_WIDTH*4;
 parameter   ADDR_DEPTH  = HRES*VRES/4;
 parameter   ADDR_WIDTH  = $clog2(ADDR_DEPTH);     
 
@@ -25,7 +26,7 @@ logic               hsync;
 logic               de;
 logic        [23:0] data;
 
-// VSYNC, HSYNC, DE
+// Frame Memory Control
 logic                   fmem_csn   ;
 logic                   fmem_wen   ;
 logic [ADDR_WIDTH-1:0]  fmem_addr  ;
@@ -59,18 +60,42 @@ disp_sync_gen_fsm #(
   ),  .o_de       (de
   ));
 
-FRAMEMEM #(
+frame_memory_control #(
   .DATA_WIDTH     (DATA_WIDTH),
   .ADDR_DEPTH     (ADDR_DEPTH),
   .FILE_PATH      ("24bpp-320x240.ppm")
-) u_FRAMEMEM(
-      .CLK        (clk
-  ),  .CSN        (fmem_csn
-  ),  .WEN        (fmem_wen
-  ),  .ADDR       (fmem_addr
-  ),  .DIN        (fmem_din
-  ),  .DOUT       (fmem_dout
+) u_frame_mem_ctrl(
+      .i_clk      (clk
+  ),  .rst_n      (rst_n
+  ),  .i_vsync    (vsync
+  ),  .i_hsync    (hsync
+  ),  .i_vfp      (5
+  ),  .i_vbp      (3
+  ),  .i_hfp      (5
+  ),  .i_hbp      (3
+
+  ),  .i_vres     (VRES
+  ),  .i_hres     (HRES
+
+  ),  .o_vsync    (
+  ),  .o_hsync    (
+  ),  .o_data     (
+  ),  .o_de       ( 
+
   ));
+
+//FRAMEMEM #(
+//  .DATA_WIDTH     ( MEM_WIDTH),
+//  .ADDR_DEPTH     (ADDR_DEPTH),
+//  .FILE_PATH      ("24bpp-320x240.ppm")
+//) u_FRAMEMEM(
+//      .CLK        (clk
+//  ),  .CSN        (fmem_csn
+//  ),  .WEN        (fmem_wen
+//  ),  .ADDR       (fmem_addr
+//  ),  .DIN        (fmem_din
+//  ),  .DOUT       (fmem_dout
+//  ));
 
 initial begin
   #(CLK_PERIOD*3) rst_n   <= 'd1;
