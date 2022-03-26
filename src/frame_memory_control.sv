@@ -37,15 +37,33 @@ logic [ MEM_WIDTH-1:0]  fmem_dout  ;
 //
 //);
 //
-//memory_read_control #(
-//
-//) u_mem_rd_ctrl (
-//
-//);
+
+memory_read_control #(
+  .DATA_WIDTH     (DATA_WIDTH), 
+  .ADDR_DEPTH     (ADDR_DEPTH) 
+) u_mem_rd_ctrl (
+      .i_clk      (i_clk
+  ),  .rst_n      (rst_n
+
+  ),  .i_vsync    (i_vsync
+  ),  .i_hsync    (i_hsync
+  ),  .i_vfp      (i_vfp  
+  ),  .i_vbp      (i_vbp  
+  ),  .i_hfp      (i_hfp  
+  ),  .i_hbp      (i_hbp  
+
+  ),  .i_vres     (i_vres 
+  ),  .i_hres     (i_hres 
+
+  ),  .o_ren      ( 
+  ),  .o_raddr    ( 
+  ),  .i_rdata    ('d0 
+  ));
+
 FRAMEMEM #(
-  .DATA_WIDTH     ( MEM_WIDTH ),
-  .ADDR_DEPTH     (ADDR_DEPTH ),
-  .FILE_PATH      (FILE_PATH  )
+  .DATA_WIDTH     ( MEM_WIDTH),
+  .ADDR_DEPTH     (ADDR_DEPTH),
+  .FILE_PATH      (FILE_PATH )
 ) u_FRAMEMEM(
       .CLK        (clk
   ),  .CSN        (fmem_csn

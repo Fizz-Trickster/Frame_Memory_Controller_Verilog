@@ -42,8 +42,8 @@ always #(CLK_PERIOD/2) clk = ~clk;
 //end
 
 disp_sync_gen_fsm #(
-  .VPULSE  (3),
-  .HPULSE  (3),
+  .VPULSE  (1),
+  .HPULSE  (1),
   .VRES    (VRES),
   .HRES    (HRES),
   .VBP     (3),
