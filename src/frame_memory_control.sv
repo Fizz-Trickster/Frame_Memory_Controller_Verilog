@@ -10,12 +10,15 @@ parameter     FILE_PATH  = "24bpp-320x240.ppm"    )(
 
   input   logic                   i_vsync   ,
   input   logic                   i_hsync   ,
-  input   logic           [ 9:0]  i_vfp     ,
-  input   logic           [ 9:0]  i_vbp     ,
-  input   logic           [ 9:0]  i_hfp     ,
-  input   logic           [ 9:0]  i_hbp     ,
 
+  input   logic           [ 9:0]  i_vfp     ,
+  input   logic           [ 3:0]  i_vpulse  ,
+  input   logic           [ 9:0]  i_vbp     ,
   input   logic           [10:0]  i_vres    ,
+
+  input   logic           [ 9:0]  i_hfp     ,
+  input   logic           [ 3:0]  i_hpulse  ,
+  input   logic           [ 9:0]  i_hbp     ,
   input   logic           [10:0]  i_hres    ,
 
   output  logic                   o_vsync   ,
@@ -47,12 +50,15 @@ memory_read_control #(
 
   ),  .i_vsync    (i_vsync
   ),  .i_hsync    (i_hsync
-  ),  .i_vfp      (i_vfp  
-  ),  .i_vbp      (i_vbp  
-  ),  .i_hfp      (i_hfp  
-  ),  .i_hbp      (i_hbp  
 
+  ),  .i_vbp      (i_vbp  
+  ),  .i_vpulse   (i_vpulse
+  ),  .i_vfp      (i_vfp  
   ),  .i_vres     (i_vres 
+  
+  ),  .i_hfp      (i_hfp  
+  ),  .i_hpulse   (i_hpulse
+  ),  .i_hbp      (i_hbp  
   ),  .i_hres     (i_hres 
 
   ),  .o_ren      ( 

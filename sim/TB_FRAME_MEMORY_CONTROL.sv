@@ -69,12 +69,15 @@ frame_memory_control #(
   ),  .rst_n      (rst_n
   ),  .i_vsync    (vsync
   ),  .i_hsync    (hsync
-  ),  .i_vfp      (5
+  
   ),  .i_vbp      (3
-  ),  .i_hfp      (5
-  ),  .i_hbp      (3
-
+  ),  .i_vpulse   (1
+  ),  .i_vfp      (5
   ),  .i_vres     (VRES
+
+  ),  .i_hbp      (3
+  ),  .i_hpulse   (1
+  ),  .i_hfp      (5
   ),  .i_hres     (HRES
 
   ),  .o_vsync    (
