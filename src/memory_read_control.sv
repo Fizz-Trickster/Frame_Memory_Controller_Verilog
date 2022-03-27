@@ -23,6 +23,9 @@ parameter     ADDR_WIDTH = $clog2(ADDR_DEPTH)     )(
   input   logic [DATA_WIDTH-1:0]  i_rdata  
 );
 
+//========================================== 
+// Internal Signal Description
+//========================================== 
 Vstate_t            cur_Vstate, nxt_Vstate;
 Hstate_t            cur_Hstate, nxt_Hstate;
 Vstate_t  [ 2:0]    cur_Vstate_d;
@@ -33,8 +36,10 @@ logic     [11:0]    rowCnt;
 
 logic               de;
 
-// column Count
-always @(posedge i_clk, negedge rst_n) begin
+//========================================== 
+// column count
+//========================================== 
+always_ff @(posedge i_clk, negedge rst_n) begin
   if(~rst_n) begin 
     cur_Hstate  <= S_HIDLE;
   end else begin
@@ -42,7 +47,8 @@ always @(posedge i_clk, negedge rst_n) begin
   end
 end
 
-always @(*) begin
+//always @(*) begin
+always_comb begin
   nxt_Hstate = cur_Hstate; // default 
   case (cur_Hstate)
     S_HIDLE   : if(rst_n              ) nxt_Hstate = S_HPULSE;              
@@ -53,7 +59,7 @@ always @(*) begin
   endcase
 end
 
-always @(posedge i_clk, negedge rst_n ) begin
+always_ff @(posedge i_clk, negedge rst_n ) begin
   if(~rst_n) begin
     colCnt <= 'd0;
   end else begin
@@ -79,15 +85,19 @@ always @(posedge i_clk, negedge rst_n ) begin
   end
 end
 
-// row Count 
-always @(posedge i_clk, negedge rst_n) begin
+//========================================== 
+// row count 
+//========================================== 
+always_ff @(posedge i_clk, negedge rst_n) begin
   if(~rst_n) begin 
     cur_Vstate  <= S_VIDLE;
   end else if(cur_Hstate == S_HPULSE && colCnt == 'd0) begin
     cur_Vstate  <= nxt_Vstate;
   end
 end
-always @(*) begin
+
+//always @(*) begin
+always_comb begin
   nxt_Vstate = cur_Vstate; // default 
   case (cur_Vstate)
     S_VIDLE   : if(rst_n              ) nxt_Vstate = S_VPULSE;              
@@ -98,7 +108,7 @@ always @(*) begin
   endcase
 end
 
-always @(posedge i_clk, negedge rst_n ) begin
+always_ff @(posedge i_clk, negedge rst_n ) begin
   if(~rst_n) begin
     rowCnt <= 'd0;
   end else if(cur_Hstate == S_HPULSE && colCnt == 'd0) begin
@@ -124,7 +134,10 @@ always @(posedge i_clk, negedge rst_n ) begin
   end
 end
 
-always @(posedge i_clk, negedge rst_n) begin
+//========================================== 
+// Data Enable(de) 
+//========================================== 
+always_ff @(posedge i_clk, negedge rst_n) begin
   if(~rst_n) begin 
     cur_Hstate_d  <= 'd0;
     cur_Vstate_d  <= 'd0;
@@ -133,6 +146,25 @@ always @(posedge i_clk, negedge rst_n) begin
     cur_Hstate_d  <= {cur_Hstate_d[1:0], cur_Hstate};
   end
 end
+
 assign de = (cur_Hstate_d[1] == S_HACTIVE) && (cur_Vstate_d[0] == S_VACTIVE);
+
+//========================================== 
+// read control 
+//========================================== 
+logic         read_enable; 
+logic [14:0]  addr;
+
+always_ff @(posedge i_clk, negedge rst_n) begin
+  if(~rst_n) begin 
+    read_enable <= 'd0; 
+  end else if(cur_Vstate_d[0] == S_VACTIVE) begin
+    if(cur_Hstate_d[1] == S_HBP && colCnt == 'd0) begin
+      read_enable <= 'd1; 
+    end else if(cur_Hstate_d[1] == S_HFP && colCnt == 'd0) begin
+      read_enable <= 'd0; 
+    end
+  end
+end
 
 endmodule
