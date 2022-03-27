@@ -33,6 +33,10 @@ logic [ADDR_WIDTH-1:0]  fmem_addr  ;
 logic [DATA_WIDTH-1:0]  fmem_din   ;
 logic [DATA_WIDTH-1:0]  fmem_dout  ;
 
+logic                   o_vsync    ;
+logic                   o_hsync    ;
+logic                   o_de       ;
+logic [DATA_WIDTH-1:0]  o_data     ;
 
 always #(CLK_PERIOD/2) clk = ~clk;
 
@@ -48,7 +52,7 @@ disp_sync_gen_fsm #(
   .HRES    (HRES),
   .VBP     (3),
   .VFP     (5),
-  .HBP     (3),
+  .HBP     (4),
   .HFP     (5)   
 )   u_disp_sync_gen_fsm (
       .i_clk      (clk
@@ -75,16 +79,30 @@ frame_memory_control #(
   ),  .i_vfp      (5
   ),  .i_vres     (VRES
 
-  ),  .i_hbp      (3
+  ),  .i_hbp      (4
   ),  .i_hpulse   (1
   ),  .i_hfp      (5
   ),  .i_hres     (HRES
 
-  ),  .o_vsync    (
-  ),  .o_hsync    (
-  ),  .o_data     (
-  ),  .o_de       ( 
+  ),  .o_vsync    (o_vsync
+  ),  .o_hsync    (o_hsync
+  ),  .o_de       (o_de    
+  ),  .o_data     (o_data 
 
+  ));
+
+PPM_FILE_WRITE_MODEL #(
+  .DATA_WIDTH     (DATA_WIDTH),
+  .HRES           (HRES),
+  .VRES           (VRES)
+) u_PPM_FILE_WRITE_MODEL(
+      .clk             (clk
+  ),  .rst_n           (rst_n
+
+  ),  .i_vsync         (o_vsync
+  ),  .i_hsync         (o_hsync
+  ),  .i_de            (o_de    
+  ),  .i_data          (o_data 
   ));
 
 //FRAMEMEM #(

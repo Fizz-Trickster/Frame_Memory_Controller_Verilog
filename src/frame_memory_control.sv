@@ -23,8 +23,8 @@ parameter     FILE_PATH  = "24bpp-320x240.ppm"    )(
 
   output  logic                   o_vsync   ,
   output  logic                   o_hsync   ,
-  output  logic [DATA_WIDTH-1:0]  o_data    ,
-  output  logic                   o_de    
+  output  logic                   o_de      , 
+  output  logic [DATA_WIDTH-1:0]  o_data    
 );
 
 // Frame Memory Control
@@ -43,6 +43,7 @@ logic [ MEM_WIDTH-1:0]  fmem_dout  ;
 
 memory_read_control #(
   .DATA_WIDTH     (DATA_WIDTH), 
+  .MEM_WIDTH      ( MEM_WIDTH), 
   .ADDR_DEPTH     (ADDR_DEPTH) 
 ) u_mem_rd_ctrl (
       .i_clk      (i_clk
@@ -61,9 +62,14 @@ memory_read_control #(
   ),  .i_hbp      (i_hbp  
   ),  .i_hres     (i_hres 
 
-  ),  .o_ren      ( 
-  ),  .o_raddr    ( 
-  ),  .i_rdata    ('d0 
+  ),  .o_vsync    (o_vsync
+  ),  .o_hsync    (o_hsync
+  ),  .o_de       (o_de   
+  ),  .o_data     (o_data 
+
+  ),  .o_ren      (fmem_csn 
+  ),  .o_raddr    (fmem_addr 
+  ),  .i_rdata    (fmem_dout 
   ));
 
 FRAMEMEM #(
@@ -71,9 +77,9 @@ FRAMEMEM #(
   .ADDR_DEPTH     (ADDR_DEPTH),
   .FILE_PATH      (FILE_PATH )
 ) u_FRAMEMEM(
-      .CLK        (clk
+      .CLK        (i_clk
   ),  .CSN        (fmem_csn
-  ),  .WEN        (fmem_wen
+  ),  .WEN        (~fmem_csn //fmem_wen
   ),  .ADDR       (fmem_addr
   ),  .DIN        (fmem_din
   ),  .DOUT       (fmem_dout

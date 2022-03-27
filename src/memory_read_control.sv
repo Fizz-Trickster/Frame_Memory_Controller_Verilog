@@ -2,6 +2,7 @@ import state_pkg::*;
 
 module memory_read_control                        #(
 parameter     DATA_WIDTH = 24,
+parameter     MEM_WIDTH  = DATA_WIDTH*4,
 parameter     ADDR_DEPTH = 512*512/4,
 parameter     ADDR_WIDTH = $clog2(ADDR_DEPTH)     )(
 
@@ -20,10 +21,15 @@ parameter     ADDR_WIDTH = $clog2(ADDR_DEPTH)     )(
   input   logic           [ 3:0]  i_hpulse  ,
   input   logic           [ 9:0]  i_hbp     ,
   input   logic           [10:0]  i_hres    ,
-  
+
+  output  logic                   o_vsync   ,
+  output  logic                   o_hsync   ,
+  output  logic                   o_de      ,
+  output  logic [DATA_WIDTH-1:0]  o_data    ,
+
   output  logic                   o_ren     ,
   output  logic [ADDR_WIDTH-1:0]  o_raddr   ,
-  input   logic [DATA_WIDTH-1:0]  i_rdata  
+  input   logic [ MEM_WIDTH-1:0]  i_rdata  
 );
 
 //========================================== 
@@ -117,20 +123,20 @@ always_ff @(posedge i_clk, negedge rst_n ) begin
     case(cur_Vstate)
       S_VIDLE   : rowCnt <= rowCnt;
       S_VPULSE  : begin
-        if(rowCnt == i_vpulse-1) rowCnt <= 'd0;
-        else                    rowCnt <= rowCnt +'d1;
+        if(rowCnt == i_vpulse-1)  rowCnt <= 'd0;
+        else                      rowCnt <= rowCnt +'d1;
       end
       S_VBP     : begin
-        if(rowCnt == i_vbp-1)   rowCnt <= 'd0;
-        else                    rowCnt <= rowCnt +'d1;
+        if(rowCnt == i_vbp-1)     rowCnt <= 'd0;
+        else                      rowCnt <= rowCnt +'d1;
       end
       S_VACTIVE : begin
-        if(rowCnt == i_vres-1)  rowCnt <= 'd0;
-        else                    rowCnt <= rowCnt +'d1;
+        if(rowCnt == i_vres-1)    rowCnt <= 'd0;
+        else                      rowCnt <= rowCnt +'d1;
       end
       S_VFP     : begin
-        if(rowCnt == i_vfp-1)   rowCnt <= 'd0;
-        else                    rowCnt <= rowCnt +'d1;
+        if(rowCnt == i_vfp-1)     rowCnt <= 'd0;
+        else                      rowCnt <= rowCnt +'d1;
       end
     endcase
   end
@@ -144,18 +150,102 @@ assign de = (cur_Hstate == S_HACTIVE) && (cur_Vstate == S_VACTIVE);
 //========================================== 
 // read control 
 //========================================== 
-logic         read_enable; 
-logic [14:0]  addr;
+logic                 read_area; 
+logic                 read_area_d; 
+logic                 read_start; 
+logic                 read_enable; 
+logic [19:0]          read_addr;
+
+logic [ MEM_WIDTH:0]  fmem_data;
+logic [DATA_WIDTH:0]  data_out;
+
+logic                 isEvenLine; 
+logic                 isOddLine; 
+logic                 isEvenPixel;
+logic                 isOddPixel;
 
 always_ff @(posedge i_clk, negedge rst_n) begin
   if(~rst_n) begin 
-    read_enable <= 'd0; 
+    read_area <= 'd0; 
   end else if(cur_Vstate == S_VACTIVE) begin
     if(cur_Hstate == S_HBP && colCnt == 'd0) begin
-      read_enable <= 'd1; 
+      read_area <= 'd1; 
     end else if(cur_Hstate == S_HFP && colCnt == 'd0) begin
-      read_enable <= 'd0; 
+      read_area <= 'd0; 
     end
+  end
+end
+
+always_ff @(posedge i_clk, negedge rst_n) begin
+  if(~rst_n) begin 
+    read_area_d <= 'd0; 
+  end else begin
+    read_area_d <= read_area; 
+  end
+end
+
+assign read_start = ({read_area,read_area_d} == 2'b10);
+
+always_ff @(posedge i_clk, negedge rst_n) begin
+  if(~rst_n) begin 
+    read_addr <= 'd0; 
+  end else if(read_start) begin
+    read_addr <= i_hres*(rowCnt >> 1) ; 
+  //end else if(read_area && isEvenLine) begin
+  end else if(read_area) begin
+    read_addr <= read_addr + 'd1; 
+  end
+end
+
+assign isEvenLine   = (cur_Vstate == S_VACTIVE) && (~rowCnt[0]);
+assign isOddLine    = (cur_Vstate == S_VACTIVE) && ( rowCnt[0]);
+
+assign isEvenPixel  = (de) && (~colCnt[0]);
+assign isOddPixel   = (de) && ( colCnt[0]);
+
+always_ff @(posedge i_clk, negedge rst_n) begin
+  if(~rst_n) begin
+    read_enable <= 'd0; 
+  //end else if(read_start && isEvenLine) begin
+  end else if(read_start) begin
+    read_enable <= 'd1; 
+  end else if(read_addr == (i_hres*((rowCnt>>1)+1))-1) begin
+    read_enable <= 'd0; 
+  end
+end
+
+assign o_raddr  = read_addr >> 1;
+assign o_ren    = ~(read_enable && ~read_addr[0]);
+
+always_ff @(posedge i_clk, negedge rst_n) begin
+  if(~rst_n) begin
+    fmem_data <= 'd0; 
+  end else if(read_enable && read_addr[0]) begin
+    fmem_data <= i_rdata; 
+  end
+end
+
+always_comb begin
+  data_out = 'd0; // default 
+  case ({isEvenLine, isEvenPixel})
+    {2'b00} : data_out = fmem_data[00+:24];              
+    {2'b01} : data_out = fmem_data[24+:24];
+    {2'b10} : data_out = fmem_data[48+:24];
+    {2'b11} : data_out = fmem_data[72+:24];
+  endcase
+end
+
+always_ff @(posedge i_clk, negedge rst_n) begin
+  if(~rst_n) begin
+    o_vsync <= 'd0; 
+    o_hsync <= 'd0;
+    o_de    <= 'd0;
+    o_data  <= 'd0;
+  end else begin
+    o_vsync <= i_vsync  ; 
+    o_hsync <= i_hsync  ;
+    o_de    <= de       ;
+    o_data  <= data_out ;
   end
 end
 
