@@ -134,7 +134,7 @@ initial begin
   
   PSC = 0;
   PEC = HRES-1;
-  SR  = 0;
+  SR  = 10;
   ER  = VRES-1;
   
   repeat(3) @(posedge vsync);

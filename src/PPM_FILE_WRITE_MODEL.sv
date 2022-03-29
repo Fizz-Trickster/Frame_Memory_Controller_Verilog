@@ -3,13 +3,13 @@ parameter     DATA_WIDTH  = 24,
 parameter     HRES        = 320, 
 parameter     VRES        = 240   )(
 
-  input   logic                 clk             ,
-  input   logic                 rst_n           ,
+  input   logic                   clk             ,
+  input   logic                   rst_n           ,
 
-  input   logic                 i_vsync         ,
-  input   logic                 i_hsync         ,
-  input   logic                 i_de            ,
-  input   logic [DATA_WIDTH:0]  i_data          
+  input   logic                   i_vsync         ,
+  input   logic                   i_hsync         ,
+  input   logic                   i_de            ,
+  input   logic [DATA_WIDTH-1:0]  i_data          
 );
 
 int     fp;

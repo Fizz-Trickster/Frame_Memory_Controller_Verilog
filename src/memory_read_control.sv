@@ -153,7 +153,8 @@ end
 assign de = (cur_Hstate == S_HACTIVE) && (cur_Vstate == S_VACTIVE);
 
 //========================================== 
-// read control 
+// read control
+// Frame Memory latency 3 clk 
 //========================================== 
 logic                 read_area; 
 logic                 read_area_d; 
@@ -172,7 +173,7 @@ logic                 isOddPixel;
 always_ff @(posedge i_clk, negedge rst_n) begin
   if(~rst_n) begin 
     read_area <= 'd0; 
-  end else if(cur_Vstate == S_VACTIVE) begin
+  end else if(cur_Vstate == S_VACTIVE && rowCnt >= i_SR && rowCnt <= i_ER) begin
     if(cur_Hstate == S_HBP && colCnt == 'd0) begin
       read_area <= 'd1; 
     end else if(cur_Hstate == S_HFP && colCnt == 'd0) begin
@@ -195,7 +196,7 @@ always_ff @(posedge i_clk, negedge rst_n) begin
   if(~rst_n) begin 
     read_addr <= 'd0; 
   end else if(read_start) begin
-    read_addr <= i_hres*(rowCnt >> 1) ; 
+    read_addr <= i_hres*(rowCnt >> 1) + (i_PSC >> 1); 
   //end else if(read_area && isEvenLine) begin
   end else if(read_area) begin
     read_addr <= read_addr + 'd1; 
@@ -226,7 +227,9 @@ always_ff @(posedge i_clk, negedge rst_n) begin
   if(~rst_n) begin
     fmem_data <= 'd0; 
   end else if(read_enable && read_addr[0]) begin
-    fmem_data <= i_rdata; 
+    fmem_data <= i_rdata;
+  end else if(~read_area) begin 
+    fmem_data <= 'd0;
   end
 end
 
