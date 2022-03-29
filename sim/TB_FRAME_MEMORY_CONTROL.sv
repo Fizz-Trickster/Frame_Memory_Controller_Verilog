@@ -38,6 +38,12 @@ logic                   o_hsync    ;
 logic                   o_de       ;
 logic [DATA_WIDTH-1:0]  o_data     ;
 
+// Partial Display 
+bit             [10:0]  PSC        ;
+bit             [10:0]  PEC        ;
+bit             [10:0]  SR         ;
+bit             [10:0]  ER         ;
+
 always #(CLK_PERIOD/2) clk = ~clk;
 
 //initial begin
@@ -73,6 +79,11 @@ frame_memory_control #(
   ),  .rst_n      (rst_n
   ),  .i_vsync    (vsync
   ),  .i_hsync    (hsync
+
+  ),  .i_PSC      (PSC
+  ),  .i_PEC      (PEC
+  ),  .i_SR       (SR 
+  ),  .i_ER       (ER 
   
   ),  .i_vbp      (3
   ),  .i_vpulse   (1
@@ -120,7 +131,12 @@ PPM_FILE_WRITE_MODEL #(
 
 initial begin
   #(CLK_PERIOD*3) rst_n   <= 'd1;
-
+  
+  PSC = 0;
+  PEC = HRES-1;
+  SR  = 0;
+  ER  = VRES-1;
+  
   repeat(3) @(posedge vsync);
   repeat(5) @(posedge clk);
   $finish;

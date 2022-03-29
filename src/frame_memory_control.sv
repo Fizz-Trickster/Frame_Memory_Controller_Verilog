@@ -11,6 +11,11 @@ parameter     FILE_PATH  = "24bpp-320x240.ppm"    )(
   input   logic                   i_vsync   ,
   input   logic                   i_hsync   ,
 
+  input   logic           [10:0]  i_PSC     ,
+  input   logic           [10:0]  i_PEC     ,
+  input   logic           [10:0]  i_SR      ,
+  input   logic           [10:0]  i_ER      ,
+  
   input   logic           [ 9:0]  i_vfp     ,
   input   logic           [ 3:0]  i_vpulse  ,
   input   logic           [ 9:0]  i_vbp     ,
@@ -52,6 +57,11 @@ memory_read_control #(
   ),  .i_vsync    (i_vsync
   ),  .i_hsync    (i_hsync
 
+  ),  .i_PSC      (i_PSC
+  ),  .i_PEC      (i_PEC
+  ),  .i_SR       (i_SR 
+  ),  .i_ER       (i_ER 
+  
   ),  .i_vbp      (i_vbp  
   ),  .i_vpulse   (i_vpulse
   ),  .i_vfp      (i_vfp  

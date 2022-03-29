@@ -12,6 +12,11 @@ parameter     ADDR_WIDTH = $clog2(ADDR_DEPTH)     )(
   input   logic                   i_vsync   ,
   input   logic                   i_hsync   ,
 
+  input   logic           [10:0]  i_PSC     ,
+  input   logic           [10:0]  i_PEC     ,
+  input   logic           [10:0]  i_SR      ,
+  input   logic           [10:0]  i_ER      ,
+  
   input   logic           [ 9:0]  i_vfp     ,
   input   logic           [ 3:0]  i_vpulse  ,
   input   logic           [ 9:0]  i_vbp     ,
