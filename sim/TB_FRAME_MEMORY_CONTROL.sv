@@ -132,10 +132,14 @@ PPM_FILE_WRITE_MODEL #(
 initial begin
   #(CLK_PERIOD*3) rst_n   <= 'd1;
   
-  PSC = 0;
-  PEC = HRES-1;
+  //PSC = 0;
+  //PEC = HRES-1;
+  //SR  = 0;
+  //ER  = VRES-1;
+  PSC = 100;
+  PEC = HRES-100-1;
   SR  = 10;
-  ER  = VRES-1;
+  ER  = VRES-10-1;
   
   repeat(3) @(posedge vsync);
   repeat(5) @(posedge clk);
